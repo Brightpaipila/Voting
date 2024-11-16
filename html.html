@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        .sidebar {
+            height: 100%;
+            width: 250px;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: -250px;
+            background-color: #333;
+            padding-top: 60px;
+            transition: 0.3s;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar a {
+            padding: 15px 25px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #fff;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #555;
+        }
+
+        .toggle-btn {
+            position: fixed;
+            left: 20px;
+            top: 20px;
+            cursor: pointer;
+            background: #333;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            z-index: 2;
+        }
+
+        .main-content {
+            margin-left: 0;
+            padding: 20px;
+            transition: 0.3s;
+        }
+
+        .main-content.active {
+            margin-left: 250px;
+        }
+
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f5f5f5;
+        }
+
+        .login-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .login-button {
+            margin: 10px;
+            padding: 12px 24px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        .login-button:hover {
+            background-color: #45a049;
+        }
+
+        .voting-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .position-card {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .candidate-option {
+            margin: 10px 0;
+        }
+
+        .submit-vote {
+            width: 100%;
+            padding: 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        .countdown {
+            text-align: center;
+            font-size: 24px;
+            margin: 20px 0;
+        }
+
+        .results-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .admin-controls {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+
+        .admin-button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+    <div class="sidebar" id="sidebar">
+        <a href="#" onclick="showPage('home')">Home</a>
+        <a href="#" onclick="showPage('voting')">Voting</a>
+        <a href="#" onclick="showPage('results')">Results</a>
+        <a href="#" onclick="logout()">Logout</a>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <div id="loginPage" class="login-container">
+            <div class="login-box">
+              <h1>Welcome to Mzuni Data Science Election 2025</h1>
+                <input type="text" id="username" placeholder="Enter Username" />
+                <input type="password" id="password" placeholder="Enter Password" />
+                <button class="login-button" onclick="login('candidate')">Login as Candidate</button>
+                <button class="login-button" onclick="login('admin')">Login as Admin</button>
+            </div>
+        </div>
+
+        <div id="homePage" class="hidden">
+            <h1>Welcome to the Voting System</h1>
+            <p>Select an option from the sidebar to get started.</p>
+        </div>
+
+        <div id="votingPage" class="hidden">
+            <div class="voting-container">
+                <h2>Cast Your Vote</h2>
+                <div id="votingPositions"></div>
+                <button class="submit-vote" onclick="submitVote()">Submit Vote</button>
+            </div>
+        </div>
+
+        <div id="resultsPage" class="hidden">
+            <div class="results-container">
+                <h2>Election Results</h2>
+                <div class="countdown" id="countdown"></div>
+                <div id="resultsContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentUsername = '';
+        let currentPassword = '';
+        let hasVoted = false;
+        let showResults = false;
+        const votingEnds = new Date().getTime() + (24 * 60 * 60 * 1000);
+
+        let positions = [
+            {
+                id: 1,
+                title: "President",
+                candidates: ["John Doe", "Jane Smith"]
+            },
+            {
+                id: 2,
+                title: "Secretary",
+                candidates: ["Bob Johnson", "Alice Brown"]
+            }
+        ];
+
+        const voteResults = {
+            "President": { "John Doe": 15, "Jane Smith": 10 },
+            "Secretary": { "Bob Johnson": 12, "Alice Brown": 13 }
+        };
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('mainContent').classList.toggle('active');
+        }
+
+        const users = {
+    admin: { username: 'admin', password: '1234' },
+    candidate: { username: 'can', password: '12' }
+};
+
+function login(userType) {
+    const usernameInput = document.getElementById('username').value;
+    const passwordInput = document.getElementById('password').value;
+
+    if (usernameInput === '' || passwordInput === '') {
+        alert('Please enter both username and password.');
+        return;
+    }
+
+    if (usernameInput === users[userType].username && passwordInput === users[userType].password) {
+        currentUsername = usernameInput;
+        currentPassword = passwordInput;
+        currentUser = userType;
+
+        document.getElementById('loginPage').style.display = 'none';
+        showPage('home');
+        document.getElementById('sidebar').classList.add('active');
+        document.getElementById('mainContent').classList.add('active');
+    } else {
+        alert('Username and password do not match.');
+    }
+}
+
+
+        function logout() {
+            currentUser = null;
+            hasVoted = false;
+            document.getElementById('loginPage').style.display = 'flex';
+            hideAllPages();
+            document.getElementById('sidebar').classList.remove('active');
+            document.getElementById('mainContent').classList.remove('active');
+        }
+
+        function hideAllPages() {
+            document.getElementById('homePage').style.display = 'none';
+            document.getElementById('votingPage').style.display = 'none';
+            document.getElementById('resultsPage').style.display = 'none';
+        }
+
+        function showPage(page) {
+            hideAllPages();
+            document.getElementById(page + 'Page').style.display = 'block';
+            
+            if (page === 'voting') {
+                renderVotingPage();
+            } else if (page === 'results') {
+                updateResults();
+            }
+        }
+
+        function renderVotingPage() {
+            const container = document.getElementById('votingPositions');
+            container.innerHTML = '';
+
+            if (currentUser === 'admin') {
+                const adminControls = document.createElement('div');
+                adminControls.className = 'admin-controls';
+                adminControls.innerHTML = `
+                    <button onclick="addPosition()" class="admin-button">Add Position</button>
+                    <button onclick="removePosition()" class="admin-button">Remove Position</button>
+                    <button onclick="addCandidate()" class="admin-button">Add Candidate</button>
+                    <button onclick="toggleResultsVisibility()" class="admin-button">
+                        ${showResults ? 'Hide Results' : 'Show Results'}
+                    </button>
+                `;
+                container.appendChild(adminControls);
+            } else if (!hasVoted) {
+                positions.forEach(position => {
+                    const positionDiv = document.createElement('div');
+                    positionDiv.className = 'position-card';
+                    positionDiv.innerHTML = `
+                        <h3>${position.title}</h3>
+                        ${position.candidates.map(candidate => `
+                            <div class="candidate-option">
+                                <input type="radio" name="position_${position.id}" value="${candidate}">
+                                <label>${candidate}</label>
+                            </div>
+                        `).join('')}
+                    `;
+                    container.appendChild(positionDiv);
+                });
+            } else {
+                container.innerHTML = '<p>You have already voted.</p>';
+            }
+        }
+
+        function submitVote() {
+            if (currentUser !== 'candidate' || hasVoted) {
+                alert('You cannot vote at this time.');
+                return;
+            }
+
+            const votes = {};
+            let complete = true;
+
+            positions.forEach(position => {
+                const selected = document.querySelector(`input[name="position_${position.id}"]:checked`);
+                if (selected) {
+                    votes[position.title] = selected.value;
+                } else {
+                    complete = false;
+                }
+            });
+
+            if (complete) {
+                hasVoted = true;
+                alert('Vote submitted successfully!');
+                renderVotingPage();
+            } else {
+                alert('Please vote for all positions.');
+            }
+        }
+
+        function addPosition() {
+            const title = prompt('Enter position title:');
+            if (title) {
+                const candidatesStr = prompt('Enter candidates (comma-separated):');
+                if (candidatesStr) {
+                    const candidates = candidatesStr.split(',').map(c => c.trim());
+                    positions.push({
+                        id: positions.length + 1,
+                        title,
+                        candidates
+                    });
+                    renderVotingPage();
+                }
+            }
+        }
+
+        function removePosition() {
+            const positionTitle = prompt('Enter position title to remove:');
+            const positionIndex = positions.findIndex(position => position.title === positionTitle);
+
+            if (positionIndex !== -1) {
+                positions.splice(positionIndex, 1);
+                renderVotingPage();
+            } else {
+                alert('Position not found.');
+            }
+        }
+
+        function addCandidate() {
+            const positionTitle = prompt('Enter position title to add a candidate:');
+            const position = positions.find(p => p.title === positionTitle);
+
+            if (position) {
+                const candidateName = prompt('Enter the candidate name to add:');
+                if (candidateName) {
+                    position.candidates.push(candidateName);
+                    renderVotingPage();
+                }
+            } else {
+                alert('Position not found.');
+            }
+        }
+
+        function toggleResultsVisibility() {
+            showResults = !showResults;
+            renderVotingPage();
+            updateResults();
+        }
+
+        function updateResults() {
+            const resultsContent = document.getElementById('resultsContent');
+            
+            if (currentUser === 'admin' || showResults) {
+                let resultsHtml = '';
+                for (const position in voteResults) {
+                    resultsHtml += `<h3>${position}</h3>`;
+                    for (const candidate in voteResults[position]) {
+                        resultsHtml += `<p>${candidate}: ${voteResults[position][candidate]} votes</p>`;
+                    }
+                }
+                resultsContent.innerHTML = resultsHtml;
+            } else {
+                resultsContent.innerHTML = '<p>Results will be available when voting ends.</p>';
+            }
+        }
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = votingEnds - now;
+
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById('countdown').innerHTML = `Time remaining: ${hours}h ${minutes}m ${seconds}s`;
+
+            if (distance < 0) {
+                clearInterval(countdownInterval);
+                document.getElementById('countdown').innerHTML = "Voting has ended";
+                showResults = true;
+                updateResults();
+            }
+        }
+
+        const countdownInterval = setInterval(updateCountdown, 1000);
+        updateCountdown();
+    </script>
+
+</body>
+</html>
