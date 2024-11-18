@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">	
+    <script id="javascript" src="script.js" nonce=""></script>
+   <script id="javascript" src="votepage.js" nonce=""></script>
+    
+    <link rel="stylesheet" href="style.css" nonce="" >
+    <title>data science</title>
+</head>
+<body>
+    <!-- Welcome Page -->
+    <div id="welcomePage" class="welcome-page">
+        <div class="container">
+            <h1>Welcome to Mzuni Data Science Election 2025</h1>
+            <div class="login-form">
+                <div class="form-group">
+                    <input type="text" id="username" placeholder="Username">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password" placeholder="Password">
+                </div>
+                <div class="form-group">
+                    <select id="userType">
+                        <option value="candidate">Candidate</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <button onclick="login()">Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <div id="navMenu" class="nav-menu hidden">
+        <div class="container">
+            <button onclick="showPage('home')">Home</button>
+            <button onclick="showPage('vote')">Vote</button>
+            <button onclick="showPage('results')">Results</button>
+            <button onclick="logout()" style="float: right;">Logout</button>
+        </div>
+    </div>
+
+    <!-- Home Page -->
+    <div id="homePage" class="hidden">
+        <div class="container">
+            <h2>Welcome to 2024 - 2025 new executive election</h2>
+            <p>Your Vote, You Power, Your Choice:</p>
+        </div>
+    </div>
+
+    <!-- Vote Page -->
+    <div id="votePage" class="hidden">
+        <div class="container">
+            <div id="sections"></div>
+        </div>
+    </div>
+
+    <!-- Results Page -->
+    <div id="resultsPage" class="hidden">
+        <div class="container">
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+
+</body>
+</html>
