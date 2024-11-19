@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting System</title>
+    <script id="javascript" src="../js_files/script_main.js" nonce=""></script>
+    <link rel="stylesheet" href="../css_files/styles_index.css" nonce="">
+</head>
+<body>
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+    <div class="sidebar" id="sidebar">
+        <a href="#" onclick="showPage('home')"><img src="../images/home.png" alt="home Icon" class="home-icon">Home</a>
+        <a href="#" onclick="showPage('voting')"><img src="../images/vote.png" alt="home Icon" class="home-icon">Voting</a>
+        <a href="#" onclick="showPage('results')"> <img src="../images/results.png" alt="home Icon" class="home-icon">Results</a>
+        <a href="#" onclick="logout()"><img src="../images/logout.png" alt="home Icon" class="home-icon">Logout</a>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <div id="loginPage" class="login-container">
+            <div class="home-box">
+              <h1>Welcome to Mzuni Data Science Election 2025</h1>
+            </div>
+        </div>
+
+        <div id="homePage" class="hidden">
+            <h1>Welcome to the Voting System</h1>
+            <p>Select an option from the sidebar to get started.</p>
+        </div>
+
+        <div id="votingPage" class="hidden">
+            <div class="voting-container">
+                <h2>
+                    <a  title="online voting icons">
+                        <img src="../images/online vote.png" alt="Online Voting Icon" class="voting-icon">
+                    </a>
+                    Cast Your Vote 
+                </h2>
+                
+                
+                <div id="votingPositions"></div>
+                <button class="submit-vote" onclick="submitVote()">Submit Vote</button>
+            </div>
+        </div>
+
+        <div id="resultsPage" class="hidden">
+            <div class="results-container">
+                <h2>Election Results</h2>
+                <div class="countdown" id="countdown"></div>
+                <div id="resultsContent"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
